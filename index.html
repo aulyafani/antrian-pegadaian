@@ -127,12 +127,8 @@
 </div>
 
 <script>
-  let daftarAntrian = JSON.parse(localStorage.getItem("antrian")) || [];
-  let nomorAntrian = daftarAntrian.length > 0 ? daftarAntrian[daftarAntrian.length - 1].nomor + 1 : 1;
-
-  function simpanLocal() {
-    localStorage.setItem("antrian", JSON.stringify(daftarAntrian));
-  }
+  let nomorAntrian = 1;
+  const daftarAntrian = [];
 
   function tambahAntrian() {
     const nama = document.getElementById("namaNasabah").value;
@@ -146,7 +142,6 @@
     };
 
     daftarAntrian.push(item);
-    simpanLocal();
     renderAntrian();
     document.getElementById("namaNasabah").value = "";
   }
@@ -186,11 +181,10 @@
 
   function selesaiAntrian(index) {
     daftarAntrian.splice(index, 1);
-    simpanLocal();
     renderAntrian();
   }
 
-  window.onload = renderAntrian;
+  // Inisialisasi voice
   window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 
