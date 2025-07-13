@@ -92,6 +92,10 @@
       }
     }
   </style>
+
+  <!-- Firebase SDK Tambahan -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -127,46 +131,55 @@
 </div>
 
 <script>
+  // Konfigurasi Firebase dari kamu
+  const firebaseConfig = {
+    apiKey: "AIzaSyBt14Nb9zBc0jX_ybwhdmgvypQ2zjExETY",
+    authDomain: "antrian-pegadaian.firebaseapp.com",
+    databaseURL: "https://antrian-pegadaian-default-rtdb.firebaseio.com",
+    projectId: "antrian-pegadaian",
+    storageBucket: "antrian-pegadaian.firebasestorage.app",
+    messagingSenderId: "126992071385",
+    appId: "1:126992071385:web:d9020c8a3374da21941cc8",
+    measurementId: "G-05QVFY9YQB"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
   let nomorAntrian = 1;
-  const daftarAntrian = [];
 
   function tambahAntrian() {
     const nama = document.getElementById("namaNasabah").value;
     const jenis = document.getElementById("jenisTransaksi").value;
     if (!nama.trim()) return alert("Nama nasabah wajib diisi.");
 
-    const item = {
-      nomor: nomorAntrian++,
-      nama,
-      jenis
-    };
+    const waktu = Date.now();
+    const item = { nama, jenis, waktu };
+    database.ref("antrian/" + waktu).set(item);
 
-    daftarAntrian.push(item);
-    renderAntrian();
     document.getElementById("namaNasabah").value = "";
   }
 
-  function renderAntrian() {
+  function renderAntrian(data) {
     const container = document.getElementById("daftarAntrian");
     container.innerHTML = "";
+    const daftar = Object.entries(data || {}).sort((a, b) => a[1].waktu - b[1].waktu);
 
-    daftarAntrian.forEach((item, index) => {
+    daftar.forEach(([key, item], index) => {
       const div = document.createElement("div");
-      div.className = antrian-item ${item.jenis};
-      div.innerHTML = 
-        <strong>Antrian ${item.nomor}</strong><br>
+      div.className = `antrian-item ${item.jenis}`;
+      div.innerHTML = `
+        <strong>Antrian ${index + 1}</strong><br>
         Nama: ${item.nama}<br>
         Transaksi: ${item.jenis}<br><br>
-        <button class="aksi" onclick="panggilAntrian(${index})">Panggil</button>
-        <button class="aksi" onclick="selesaiAntrian(${index})">Selesai</button>
-      ;
+        <button class="aksi" onclick="panggilAntrian('${item.nama}', '${item.jenis}')">Panggil</button>
+        <button class="aksi" onclick="selesaiAntrian('${key}')">Selesai</button>
+      `;
       container.appendChild(div);
     });
   }
 
-  function panggilAntrian(index) {
-    const item = daftarAntrian[index];
-    const text = Antrian nomor ${item.nomor}, atas nama ${item.nama}, transaksi ${item.jenis}. Silakan menuju loket.;
+  function panggilAntrian(nama, jenis) {
+    const text = `Antrian atas nama ${nama}, transaksi ${jenis}. Silakan menuju loket.`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "id-ID";
     utterance.rate = 0.9;
@@ -179,12 +192,15 @@
     speechSynthesis.speak(utterance);
   }
 
-  function selesaiAntrian(index) {
-    daftarAntrian.splice(index, 1);
-    renderAntrian();
+  function selesaiAntrian(key) {
+    database.ref("antrian/" + key).remove();
   }
 
-  // Inisialisasi voice
+  database.ref("antrian").on("value", snapshot => {
+    const data = snapshot.val();
+    renderAntrian(data);
+  });
+
   window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 
