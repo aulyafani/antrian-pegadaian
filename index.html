@@ -166,15 +166,18 @@
 
   function panggilAntrian(index) {
     const item = daftarAntrian[index];
-    const text = `Antrian nomor ${item.nomor}, atas nama ${item.nama}, transaksi ${item.jenis}. Silakan menuju loket.`;
+    const text = `Nama: ${item.nama}, transaksi: ${item.jenis}, silakan menuju loket`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "id-ID";
     utterance.rate = 0.9;
+    utterance.pitch = 1.3; // pitch tinggi agar terdengar seperti wanita
     utterance.volume = 1;
 
     const voices = speechSynthesis.getVoices();
-    const indo = voices.find(v => v.lang === "id-ID" || v.name.toLowerCase().includes("indonesia"));
-    if (indo) utterance.voice = indo;
+    const indoFemale = voices.find(v => v.lang === "id-ID" && v.name.toLowerCase().includes("female"));
+    if (indoFemale) {
+      utterance.voice = indoFemale;
+    }
 
     speechSynthesis.speak(utterance);
   }
